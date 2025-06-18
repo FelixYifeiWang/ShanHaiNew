@@ -128,6 +128,8 @@ public class ResourceManager : MonoBehaviour
             resources["greengem"] = new Resource(0, true, true);
         if (!resources.ContainsKey("gold"))  // Add green gem
             resources["gold"] = new Resource(0, true, true);
+        if (!resources.ContainsKey("divineseal"))  // Add green gem
+            resources["divineseal"] = new Resource(0, true, true);
     }
     
     private void InitializeResources()
@@ -146,6 +148,7 @@ public class ResourceManager : MonoBehaviour
         resources["bluegem"] = new Resource(0, true, true);
         resources["greengem"] = new Resource(0, true, true);
         resources["gold"] = new Resource(0, true, true);
+        resources["divineseal"] = new Resource(0, true, true);
         
         isInitialized = true;
         Debug.Log("Initialized resources with default values");

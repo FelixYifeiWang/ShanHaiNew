@@ -404,6 +404,7 @@ public class SpecialResourceInventory : MonoBehaviour
             case "bluegem": return "Blue Gem";
             case "greengem": return "Green Gem";
             case "gold": return "Gold";
+            case "divineseal": return "Divine Seal";
             default:
                 if (string.IsNullOrEmpty(resourceName)) return resourceName;
                 return char.ToUpper(resourceName[0]) + resourceName.Substring(1).ToLower();

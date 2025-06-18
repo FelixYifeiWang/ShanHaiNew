@@ -122,7 +122,7 @@ public class UniversalPauseMenu : MonoBehaviour
         containerRect.anchorMax = new Vector2(0.5f, 0.5f);
         containerRect.pivot = new Vector2(0.5f, 0.5f);
         containerRect.anchoredPosition = Vector2.zero;
-        containerRect.sizeDelta = new Vector2(300, 200);
+        containerRect.sizeDelta = new Vector2(300, 250);
         
         // Add background for content container
         Image contentBg = contentContainer.AddComponent<Image>();
@@ -156,8 +156,8 @@ public class UniversalPauseMenu : MonoBehaviour
         quitButton.onClick.AddListener(QuitGame);
         
         RectTransform quitButtonRect = quitButtonObj.GetComponent<RectTransform>();
-        quitButtonRect.anchorMin = new Vector2(0.2f, 0.4f);
-        quitButtonRect.anchorMax = new Vector2(0.8f, 0.6f);
+        quitButtonRect.anchorMin = new Vector2(0.2f, 0.5f);
+        quitButtonRect.anchorMax = new Vector2(0.8f, 0.65f);
         quitButtonRect.offsetMin = Vector2.zero;
         quitButtonRect.offsetMax = Vector2.zero;
         
@@ -177,6 +177,38 @@ public class UniversalPauseMenu : MonoBehaviour
         quitTextRect.offsetMin = Vector2.zero;
         quitTextRect.offsetMax = Vector2.zero;
         
+        // Create Quit & Delete Save button
+        GameObject quitDeleteButtonObj = new GameObject("QuitDeleteButton");
+        quitDeleteButtonObj.transform.SetParent(contentContainer.transform, false);
+        
+        Image quitDeleteButtonImage = quitDeleteButtonObj.AddComponent<Image>();
+        quitDeleteButtonImage.color = new Color(0.8f, 0.1f, 0.1f, 0.9f); // Darker red background
+        
+        Button quitDeleteButton = quitDeleteButtonObj.AddComponent<Button>();
+        quitDeleteButton.onClick.AddListener(QuitAndDeleteSave);
+        
+        RectTransform quitDeleteButtonRect = quitDeleteButtonObj.GetComponent<RectTransform>();
+        quitDeleteButtonRect.anchorMin = new Vector2(0.2f, 0.35f);
+        quitDeleteButtonRect.anchorMax = new Vector2(0.8f, 0.5f);
+        quitDeleteButtonRect.offsetMin = Vector2.zero;
+        quitDeleteButtonRect.offsetMax = Vector2.zero;
+        
+        // Create quit & delete button text
+        GameObject quitDeleteTextObj = new GameObject("QuitDeleteText");
+        quitDeleteTextObj.transform.SetParent(quitDeleteButtonObj.transform, false);
+        Text quitDeleteText = quitDeleteTextObj.AddComponent<Text>();
+        quitDeleteText.text = "Quit & Delete Save";
+        quitDeleteText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        quitDeleteText.fontSize = 14;
+        quitDeleteText.color = Color.white;
+        quitDeleteText.alignment = TextAnchor.MiddleCenter;
+        
+        RectTransform quitDeleteTextRect = quitDeleteTextObj.GetComponent<RectTransform>();
+        quitDeleteTextRect.anchorMin = Vector2.zero;
+        quitDeleteTextRect.anchorMax = Vector2.one;
+        quitDeleteTextRect.offsetMin = Vector2.zero;
+        quitDeleteTextRect.offsetMax = Vector2.zero;
+        
         // Create warning message
         GameObject warningObj = new GameObject("WarningMessage");
         warningObj.transform.SetParent(contentContainer.transform, false);
@@ -189,7 +221,7 @@ public class UniversalPauseMenu : MonoBehaviour
         
         RectTransform warningRect = warningObj.GetComponent<RectTransform>();
         warningRect.anchorMin = new Vector2(0, 0.25f);
-        warningRect.anchorMax = new Vector2(1, 0.35f);
+        warningRect.anchorMax = new Vector2(1, 0.32f);
         warningRect.offsetMin = Vector2.zero;
         warningRect.offsetMax = Vector2.zero;
         
@@ -204,8 +236,8 @@ public class UniversalPauseMenu : MonoBehaviour
         resumeButton.onClick.AddListener(HidePauseMenu);
         
         RectTransform resumeButtonRect = resumeButtonObj.GetComponent<RectTransform>();
-        resumeButtonRect.anchorMin = new Vector2(0.2f, 0.15f);
-        resumeButtonRect.anchorMax = new Vector2(0.8f, 0.35f);
+        resumeButtonRect.anchorMin = new Vector2(0.2f, 0.05f);
+        resumeButtonRect.anchorMax = new Vector2(0.8f, 0.2f);
         resumeButtonRect.offsetMin = Vector2.zero;
         resumeButtonRect.offsetMax = Vector2.zero;
         
@@ -281,6 +313,42 @@ public class UniversalPauseMenu : MonoBehaviour
         #else
             Application.Quit();
         #endif
+    }
+    
+    private void QuitAndDeleteSave()
+    {
+        Debug.Log("Quitting game and deleting save file...");
+        
+        // Delete the save file
+        DeleteSaveFile();
+        
+        // Quit the application
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+    
+    private void DeleteSaveFile()
+    {
+        try
+        {
+            string savePath = System.IO.Path.Combine(UnityEngine.Application.persistentDataPath, "gamesave.json");
+            if (System.IO.File.Exists(savePath))
+            {
+                System.IO.File.Delete(savePath);
+                Debug.Log("Save file deleted successfully");
+            }
+            else
+            {
+                Debug.Log("No save file found to delete");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to delete save file: {e.Message}");
+        }
     }
     
     public bool IsPauseMenuShowing()

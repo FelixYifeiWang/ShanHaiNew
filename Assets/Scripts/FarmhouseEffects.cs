@@ -89,18 +89,18 @@ public class FarmhouseEffects : IBuildingEffects
     // Method for other systems to check farmhouse level requirements
     public static bool IsCropTypeAvailable(string cropType)
     {
-        // int farmhouseLevel = GetFarmhouseLevel();
+        int farmhouseLevel = GetFarmhouseLevel();
         
-        // switch (cropType)
-        // {
-        //     case "crop1":
-        //     case "crop2":
-        //         return farmhouseLevel >= 1;
-        //     case "crop3":
-        //         return farmhouseLevel >= 2;
-        //     default:
-        //         return false;
-        // }
+        switch (cropType)
+        {
+            case "crop1":
+            case "crop2":
+                return farmhouseLevel >= 1;
+            case "crop3":
+                return farmhouseLevel >= 2;
+            default:
+                return false;
+        }
 
         ResourceManager resourceManager = Object.FindObjectOfType<ResourceManager>();
         if (resourceManager == null) return false;

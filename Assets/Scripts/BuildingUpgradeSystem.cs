@@ -76,7 +76,7 @@ public class BuildingUpgradeSystem : MonoBehaviour
         AddUpgradeCost("tian", 4, "actpoint", 2);
         
         // Farmhouse upgrades
-        AddUpgradeCost("farmhouse", 1, "actpoint", 2);
+        AddUpgradeCost("farmhouse", 1, "crop2", 20);
         AddUpgradeCost("farmhouse", 2, "actpoint", 99999);
         AddUpgradeCost("farmhouse", 3, "actpoint", 99999);
         AddUpgradeCost("farmhouse", 4, "actpoint", 99999);
@@ -89,15 +89,15 @@ public class BuildingUpgradeSystem : MonoBehaviour
         
         // Storage upgrades
         AddUpgradeCost("storage", 1, "actpoint", 2);
-        AddUpgradeCost("storage", 2, "actpoint", 2);
+        AddUpgradeCost("storage", 2, "crop2", 20);
         AddUpgradeCost("storage", 3, "actpoint", 99999);
         AddUpgradeCost("storage", 4, "actpoint", 99999);
         
         // Workshop upgrades (ADDED)
         AddUpgradeCost("workshop", 1, "actpoint", 2);
-        AddUpgradeCost("workshop", 2, "actpoint", 2);
-        AddUpgradeCost("workshop", 3, "actpoint", 2);
-        AddUpgradeCost("workshop", 4, "actpoint", 2);
+        AddUpgradeCost("workshop", 2, "crop3", 100);
+        AddUpgradeCost("workshop", 3, "divineseal", 1);
+        AddUpgradeCost("workshop", 4, "actpoint", 99999);
         
         // Note: Entrance doesn't upgrade according to BuildingInfoUI.cs configuration
     }

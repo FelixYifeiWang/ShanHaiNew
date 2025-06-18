@@ -349,8 +349,7 @@ public class BuildingEffectsSystem : MonoBehaviour
         // Tower repair requirements: 3 actpoint + 100 crop3 + 1 white gem, takes 3 days
         RepairRequirement towerRepair = new RepairRequirement("tower", 3);
         towerRepair.AddResourceCost("actpoint", 3);
-        towerRepair.AddResourceCost("crop1", 2);
-        towerRepair.AddResourceCost("whitegem", 1);
+        towerRepair.AddResourceCost("divineseal", 1);
         repairRequirements["tower"] = towerRepair;
     }
     

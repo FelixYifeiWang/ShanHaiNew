@@ -104,34 +104,25 @@ public class WorkshopEffects : IBuildingEffects
         allRecipes.Clear();
         
         // White Gem Creation (Level 1)
-        CraftingRecipe createWhiteGem = new CraftingRecipe("Create White Gem", 2, 1);
+        CraftingRecipe createWhiteGem = new CraftingRecipe("Create White Gem", 1, 1);
         createWhiteGem.AddInput("crop2", 5);
         createWhiteGem.AddInput("actpoint", 2);
         createWhiteGem.AddOutput("whitegem", 1);
         allRecipes.Add(createWhiteGem);
         
         // Red Gem Creation (Level 2)
-        CraftingRecipe createRedGem = new CraftingRecipe("Create Red Gem", 3, 2);
+        CraftingRecipe createRedGem = new CraftingRecipe("Create Red Gem", 2, 2);
         createRedGem.AddInput("whitegem", 2);
         createRedGem.AddInput("actpoint", 2);
         createRedGem.AddOutput("redgem", 1);
         allRecipes.Add(createRedGem);
-        
-        // Blue Gem Creation (Level 3) - Example of higher level recipe
-        CraftingRecipe createBlueGem = new CraftingRecipe("Create Blue Gem", 4, 3);
-        createBlueGem.AddInput("redgem", 2);
-        createBlueGem.AddInput("crop3", 10);
-        createBlueGem.AddInput("actpoint", 3);
-        createBlueGem.AddOutput("bluegem", 1);
-        allRecipes.Add(createBlueGem);
-        
-        // Green Gem Creation (Level 4) - Another example
-        CraftingRecipe createGreenGem = new CraftingRecipe("Create Green Gem", 5, 4);
-        createGreenGem.AddInput("bluegem", 1);
-        createGreenGem.AddInput("whitegem", 3);
-        createGreenGem.AddInput("actpoint", 4);
-        createGreenGem.AddOutput("greengem", 1);
-        allRecipes.Add(createGreenGem);
+
+        CraftingRecipe createDivineSeal = new CraftingRecipe("Create Divine Seal", 3, 3);
+        createDivineSeal.AddInput("gold", 20);
+        createDivineSeal.AddInput("actpoint", 2);
+        createDivineSeal.AddInput("redgem", 1);
+        createDivineSeal.AddOutput("divineseal", 1);
+        allRecipes.Add(createDivineSeal);
         
         recipesInitialized = true;
         Debug.Log($"Initialized {allRecipes.Count} crafting recipes");
