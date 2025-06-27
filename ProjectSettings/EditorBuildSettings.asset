@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/AdventureScene.unity
     guid: 90daebd61bff3414fb5a7b96b918ef77
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: ac00eb1a0cb413e4ca38230502e7fe99, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: 0138eca5842d2824fbb2e42694ed42bf, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 499dda97225e380498ef2b6cbadf779e, type: 2}
