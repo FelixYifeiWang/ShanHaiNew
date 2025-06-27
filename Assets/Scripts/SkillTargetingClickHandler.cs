@@ -2,27 +2,15 @@ using UnityEngine;
 
 public class SkillTargetingClickHandler : MonoBehaviour
 {
-    private HexTileController tileController;
-    
-    void Start()
-    {
-        tileController = GetComponent<HexTileController>();
-    }
-    
     void OnMouseDown()
     {
-        // Check if we're in skill targeting mode first
-        if (AdventureSkillUI.Instance != null)
+        // Only handle if skill UI is waiting for target selection
+        if (AdventureSkillUI.Instance != null && AdventureSkillUI.Instance.IsWaitingForTargetSelection())
         {
-            // If skill targeting is active, handle it and prevent normal tile click
-            AdventureSkillUI skillUI = AdventureSkillUI.Instance;
-            if (skillUI.IsWaitingForTargetSelection())
+            HexTileController tileController = GetComponent<HexTileController>();
+            if (tileController != null)
             {
-                if (tileController != null)
-                {
-                    skillUI.OnTileClicked(tileController.row, tileController.column);
-                }
-                return; // Don't let the click propagate to HexTileClickHandler
+                AdventureSkillUI.Instance.OnTileClicked(tileController.row, tileController.column);
             }
         }
     }
