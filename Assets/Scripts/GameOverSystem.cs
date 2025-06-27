@@ -205,6 +205,8 @@ public class GameOverSystem : MonoBehaviour
         }
     }
     
+    // In GameOverSystem.cs - Replace the RestartGame() method:
+
     private void RestartGame()
     {
         Debug.Log("Restarting game...");
@@ -221,9 +223,66 @@ public class GameOverSystem : MonoBehaviour
             }
         }
         
+        // Clean up persistent objects before reloading
+        CleanupPersistentObjects();
+        
         // Reload the scene
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
+
+    private void CleanupPersistentObjects()
+    {
+        // Destroy persistent ResourceManager
+        ResourceManager resourceManager = FindObjectOfType<ResourceManager>();
+        if (resourceManager != null)
+        {
+            Debug.Log("Cleaning up ResourceManager");
+            Destroy(resourceManager.gameObject);
+        }
+        
+        // Destroy persistent BuildingEffectsSystem
+        if (BuildingEffectsSystem.Instance != null)
+        {
+            Debug.Log("Cleaning up BuildingEffectsSystem");
+            Destroy(BuildingEffectsSystem.Instance.gameObject);
+        }
+        
+        // Destroy other singleton systems that might persist
+        if (SpecialResourceInventory.Instance != null)
+        {
+            Debug.Log("Cleaning up SpecialResourceInventory");
+            Destroy(SpecialResourceInventory.Instance.gameObject);
+        }
+        
+        if (UniversalPauseMenu.Instance != null)
+        {
+            Debug.Log("Cleaning up UniversalPauseMenu");
+            Destroy(UniversalPauseMenu.Instance.gameObject);
+        }
+        
+        if (CropSwapUI.Instance != null)
+        {
+            Debug.Log("Cleaning up CropSwapUI");
+            Destroy(CropSwapUI.Instance.gameObject);
+        }
+        
+        if (AdventureSelectionUI.Instance != null)
+        {
+            Debug.Log("Cleaning up AdventureSelectionUI");
+            Destroy(AdventureSelectionUI.Instance.gameObject);
+        }
+        
+        // Destroy this GameOverSystem instance to ensure fresh start
+        if (GameOverSystem.Instance == this)
+        {
+            instance = null; // Clear static reference
+            Debug.Log("Cleaning up GameOverSystem");
+            Destroy(gameObject);
+        }
+    }
+
+    // The InitializeResources() method is already correct - no changes needed
+    // The issue is that persistent objects aren't being reset on restart
     
     public bool IsGameOver()
     {
