@@ -76,9 +76,6 @@ public class HexGridManager : MonoBehaviour
         
         // NOW add indicators to all revealed empty tiles (after all tiles are placed)
         AddIndicatorsToRevealedTiles();
-        
-        Debug.Log("Level generated successfully");
-        Debug.Log($"Start tile ({startRow}, {startCol}) revealed: {revealedStatus[startRow, startCol]}");
     }
     
     private bool[,] CreateSafeZoneFromRevealed()
@@ -93,7 +90,6 @@ public class HexGridManager : MonoBehaviour
                 if (revealedStatus[r, c])
                 {
                     safeZone[r, c] = true;
-                    Debug.Log($"Safe zone: ({r}, {c})");
                 }
             }
         }
@@ -145,12 +141,10 @@ public class HexGridManager : MonoBehaviour
                         Color color = sr.color;
                         color.a = 1f;
                         sr.color = color;
-                        Debug.Log("Start tile sprite replaced successfully");
                     }
                 }
                 else
                 {
-                    Debug.LogError("start_tile sprite not found in Resources folder");
                 }
                 break;
             }
@@ -159,13 +153,11 @@ public class HexGridManager : MonoBehaviour
     
     private void RevealArea(int centerRow, int centerCol, int distance)
     {
-        Debug.Log($"RevealArea called: center=({centerRow},{centerCol}), distance={distance}");
         
         // For distance 1, just reveal center + direct neighbors (like JS version)
         if (distance == 1)
         {
             // Reveal center
-            Debug.Log($"Revealing center tile ({centerRow},{centerCol})");
             RevealTile(centerRow, centerCol);
             
             // Reveal direct neighbors
@@ -179,7 +171,6 @@ public class HexGridManager : MonoBehaviour
                 
                 if (IsValidPosition(nr, nc))
                 {
-                    Debug.Log($"Revealing neighbor tile ({nr},{nc})");
                     RevealTile(nr, nc);
                 }
             }
@@ -194,7 +185,6 @@ public class HexGridManager : MonoBehaviour
                     int hexDistance = GetHexDistance(centerRow, centerCol, r, c);
                     if (hexDistance <= distance)
                     {
-                        Debug.Log($"Revealing tile ({r},{c}) - distance from start: {hexDistance}");
                         RevealTile(r, c);
                     }
                 }
@@ -253,7 +243,6 @@ public class HexGridManager : MonoBehaviour
             attempts++;
         }
         
-        Debug.Log($"Placed {placed}/{count} {tileType} tiles");
     }
     
     private int GetHexDistance(int r1, int c1, int r2, int c2)
@@ -290,7 +279,6 @@ public class HexGridManager : MonoBehaviour
         if (IsValidPosition(row, col))
         {
             revealedStatus[row, col] = true;
-            Debug.Log($"Revealed tile ({row}, {col}) - Type: {tileTypes[row, col]}");
             
             // If it's an empty tile, replace sprite and add indicators
             if (tileTypes[row, col] == HexTileType.Empty)
@@ -319,10 +307,8 @@ public class HexGridManager : MonoBehaviour
         {
             for (int c = 0; c < cols; c++)
             {
-                // Debug specific problematic tile
                 if (r == 5 && c == 1)
                 {
-                    Debug.Log($"Checking tile (5,1): revealed={revealedStatus[r, c]}, !revealed={!revealedStatus[r, c]}, adjacent={IsAdjacentToRevealed(r, c)}");
                 }
                 
                 // MUST be unrevealed first, then check if adjacent to revealed
@@ -330,12 +316,10 @@ public class HexGridManager : MonoBehaviour
                 {
                     clickableStatus[r, c] = true;
                     ReplaceClickableTileSprite(r, c);
-                    Debug.Log($"Made tile ({r}, {c}) clickable - unrevealed: {!revealedStatus[r, c]}, adjacent: {IsAdjacentToRevealed(r, c)}");
                 }
             }
         }
         
-        Debug.Log($"Start tile ({startRow}, {startCol}) - revealed: {revealedStatus[startRow, startCol]}, clickable: {clickableStatus[startRow, startCol]}");
     }
     
     private void ReplaceClickableTileSprite(int row, int col)
@@ -362,7 +346,6 @@ public class HexGridManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("clickable_tile sprite not found in Resources folder");
                 }
                 break;
             }
@@ -432,7 +415,6 @@ public class HexGridManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("revealed_tile sprite not found in Resources folder");
                 }
                 
                 // Check for adjacent special tiles and add indicators
@@ -452,7 +434,6 @@ public class HexGridManager : MonoBehaviour
         bool hasTreasureNearby = false;
         bool hasDestinationNearby = false;
         
-        Debug.Log($"Checking indicators for tile ({row}, {col}):");
         
         for (int i = 0; i < neighborRows.Length; i++)
         {
@@ -462,7 +443,6 @@ public class HexGridManager : MonoBehaviour
             if (IsValidPosition(nr, nc))
             {
                 HexTileType neighborType = tileTypes[nr, nc];
-                Debug.Log($"  Neighbor ({nr}, {nc}): {neighborType}");
                 
                 if (neighborType == HexTileType.Bomb)
                 {
@@ -479,11 +459,9 @@ public class HexGridManager : MonoBehaviour
             }
             else
             {
-                Debug.Log($"  Neighbor ({nr}, {nc}): OUT OF BOUNDS");
             }
         }
         
-        Debug.Log($"  Result: Bomb nearby={hasBombNearby}, Treasure nearby={hasTreasureNearby}, Destination nearby={hasDestinationNearby}");
         
         // Create indicators if needed
         if (hasBombNearby || hasTreasureNearby || hasDestinationNearby)
@@ -539,7 +517,6 @@ public class HexGridManager : MonoBehaviour
         Sprite indicatorSprite = Resources.Load<Sprite>(spriteName);
         if (indicatorSprite == null)
         {
-            Debug.LogError($"{spriteName} sprite not found in Resources folder");
             return;
         }
         
@@ -560,6 +537,14 @@ public class HexGridManager : MonoBehaviour
         Color color = sr.color;
         color.a = 1f;
         sr.color = color;
+    }
+
+    public void SetTileType(int row, int col, HexTileType newType)
+    {
+        if (IsValidPosition(row, col))
+        {
+            tileTypes[row, col] = newType;
+        }
     }
     
     public bool IsValidPosition(int row, int col)

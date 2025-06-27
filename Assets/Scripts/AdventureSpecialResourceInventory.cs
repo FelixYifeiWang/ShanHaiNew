@@ -46,12 +46,10 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
     void Start()
     {
         adventureResourceManager = AdventureResourceManager.Instance;
-        Debug.Log($"Adventure Inventory: AdventureResourceManager found = {adventureResourceManager != null}");
         
         CreateInventoryButton();
         CreateInventoryPanel();
         
-        Debug.Log($"Adventure Inventory: UI created - Button: {inventoryButton != null}, Panel: {inventoryPanel != null}, Container: {inventoryContainer != null}");
         
         // Start continuous updating when showing
         InvokeRepeating("UpdateInventoryIfShowing", 0.1f, 0.1f);
@@ -299,7 +297,6 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
     
     private void UpdateInventoryDisplay()
     {
-        Debug.Log("UpdateInventoryDisplay called");
         
         if (adventureResourceManager == null) 
         {
@@ -314,7 +311,6 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
         }
         
         Dictionary<string, Resource> specialResources = adventureResourceManager.GetSpecialResources();
-        Debug.Log($"Found {specialResources.Count} special resources");
         
         // Clean up destroyed items
         List<string> toRemove = new List<string>();
@@ -355,13 +351,11 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
             string resourceName = resourcePair.Key;
             Resource resource = resourcePair.Value;
             
-            Debug.Log($"Checking resource: {resourceName}, quantity: {resource.quantity}");
             
             if (resource.quantity >= 1)
             {
                 if (!inventoryUIItems.ContainsKey(resourceName) || inventoryUIItems[resourceName] == null)
                 {
-                    Debug.Log($"Creating inventory item for {resourceName}");
                     CreateInventoryItem(resourceName, resource.quantity);
                 }
                 else
@@ -377,7 +371,6 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
             }
         }
         
-        Debug.Log($"UpdateInventoryDisplay completed. UI items count: {inventoryUIItems.Count}");
     }
     
     private void ToggleInventory()
@@ -394,12 +387,10 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
     
     private void ShowInventory()
     {
-        Debug.Log("ShowInventory called in adventure scene");
         
         if (adventureResourceManager == null)
         {
             adventureResourceManager = AdventureResourceManager.Instance;
-            Debug.Log($"AdventureResourceManager search result: {adventureResourceManager != null}");
             if (adventureResourceManager == null) 
             {
                 Debug.LogError("AdventureResourceManager not found in adventure scene!");
@@ -419,11 +410,9 @@ public class AdventureSpecialResourceInventory : MonoBehaviour
             return;
         }
         
-        Debug.Log("All components ready, showing inventory...");
         UpdateInventoryDisplay();
         inventoryPanel.SetActive(true);
         isShowing = true;
-        Debug.Log("Adventure inventory panel activated");
     }
     
     private void HideInventory()

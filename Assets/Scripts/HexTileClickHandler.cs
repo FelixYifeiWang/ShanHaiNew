@@ -63,6 +63,11 @@ public class HexTileClickHandler : MonoBehaviour
     
     void OnMouseDown()
     {
+        if (AdventureSkillUI.Instance != null && AdventureSkillUI.Instance.IsWaitingForTargetSelection())
+        {
+            // Let SkillTargetingClickHandler handle this
+            return;
+        }
         if (gridManager == null || gameManager == null) return;
         
         // Check if game is over - disable all clicks

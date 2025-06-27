@@ -24,6 +24,9 @@ public class ResourceDisplay : MonoBehaviour
         {
             // Create prefab programmatically
             resourceItemPrefab = new GameObject("ResourceItem");
+
+            Image bgImage = resourceItemPrefab.AddComponent<Image>();
+            bgImage.color = new Color(0f, 0f, 0f, 0.8f);    
             
             // Add horizontal layout
             HorizontalLayoutGroup layout = resourceItemPrefab.AddComponent<HorizontalLayoutGroup>();

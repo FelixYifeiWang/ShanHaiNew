@@ -174,6 +174,15 @@ public class BuildingInfoUI : MonoBehaviour
         }
     }
 
+    public void TriggerAssignWork()
+    {
+        // Call the existing private method
+        OnAssignWorkClicked();
+        
+        // Hide the expanded panel since this was triggered by right-click
+        HideExpandedInfo();
+    }
+
     private WorkRequirement GetTianWorkRequirement(string cropType)
     {
         WorkRequirement requirement;
@@ -693,6 +702,14 @@ public class BuildingInfoUI : MonoBehaviour
                 showUpgrade = false; // Entrance cannot be upgraded
                 if (assignWorkText == "Start Work")
                     assignWorkText = "Begin Adventure";
+                // Special handling - don't use work system, just open UI
+                if (assignWorkInteractable)
+                {
+                    assignWorkButton.onClick.RemoveAllListeners();
+                    assignWorkButton.onClick.AddListener(() => {
+                        AdventureSelectionUI.Instance.ShowSelectionUI();
+                    });
+                }
                 break;
                 
             case "tower":

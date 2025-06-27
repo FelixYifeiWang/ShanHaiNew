@@ -6,13 +6,17 @@ public class AdventureGameManager : MonoBehaviour
     [Header("Adventure Stats")]
     [SerializeField] private int maxSteps = 60;
     [SerializeField] private int maxHP = 100;
+    [SerializeField] private int maxMP = 100;  // NEW: MP system
     
     private int currentSteps;
     private int currentHP;
+    private int currentMP;  // NEW: Current MP
     
     [Header("UI Elements")]
     private Text stepsText;
     private Text hpText;
+    private Text mpText;  // NEW: MP text
+    private Text buffText;  // NEW: Buff text
     private GameObject uiPanel;
     private AdventureGameOverUI gameOverUI;
     private AdventureSuccessUI gameSuccessUI;
@@ -22,6 +26,7 @@ public class AdventureGameManager : MonoBehaviour
         // Initialize stats
         currentSteps = maxSteps;
         currentHP = maxHP;
+        currentMP = maxMP;  // NEW: Initialize MP
         
         CreateUI();
         UpdateUI();
@@ -40,6 +45,14 @@ public class AdventureGameManager : MonoBehaviour
         {
             GameObject gameSuccessObj = new GameObject("AdventureSuccessUI");
             gameSuccessUI = gameSuccessObj.AddComponent<AdventureSuccessUI>();
+        }
+        
+        // NEW: Initialize skill UI
+        AdventureSkillUI skillUI = FindObjectOfType<AdventureSkillUI>();
+        if (skillUI == null)
+        {
+            GameObject skillUIObj = new GameObject("AdventureSkillUI");
+            skillUIObj.AddComponent<AdventureSkillUI>();
         }
     }
     
@@ -61,13 +74,13 @@ public class AdventureGameManager : MonoBehaviour
         panelObj.transform.SetParent(canvas.transform);
         uiPanel = panelObj;
         
-        // Position panel in bottom right
+        // Position panel in bottom right - CHANGED: Made taller for MP and Buff
         RectTransform panelRect = panelObj.AddComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(1, 0);
         panelRect.anchorMax = new Vector2(1, 0);
         panelRect.pivot = new Vector2(1, 0);
         panelRect.anchoredPosition = new Vector2(-10, 10);
-        panelRect.sizeDelta = new Vector2(200, 60);
+        panelRect.sizeDelta = new Vector2(220, 120);  // CHANGED: Width 220, Height 120
         
         // Create Steps text
         GameObject stepsObj = new GameObject("StepsText");
@@ -79,7 +92,7 @@ public class AdventureGameManager : MonoBehaviour
         stepsText.alignment = TextAnchor.MiddleRight;
         
         RectTransform stepsRect = stepsObj.GetComponent<RectTransform>();
-        stepsRect.anchorMin = new Vector2(0, 0.5f);
+        stepsRect.anchorMin = new Vector2(0, 0.75f);  // CHANGED: For 4 stats
         stepsRect.anchorMax = new Vector2(1, 1);
         stepsRect.offsetMin = Vector2.zero;
         stepsRect.offsetMax = Vector2.zero;
@@ -94,10 +107,40 @@ public class AdventureGameManager : MonoBehaviour
         hpText.alignment = TextAnchor.MiddleRight;
         
         RectTransform hpRect = hpObj.GetComponent<RectTransform>();
-        hpRect.anchorMin = new Vector2(0, 0);
-        hpRect.anchorMax = new Vector2(1, 0.5f);
+        hpRect.anchorMin = new Vector2(0, 0.5f);  // CHANGED: For 4 stats
+        hpRect.anchorMax = new Vector2(1, 0.75f);  // CHANGED: For 4 stats
         hpRect.offsetMin = Vector2.zero;
         hpRect.offsetMax = Vector2.zero;
+        
+        // NEW: Create MP text
+        GameObject mpObj = new GameObject("MPText");
+        mpObj.transform.SetParent(panelObj.transform);
+        mpText = mpObj.AddComponent<Text>();
+        mpText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        mpText.fontSize = 16;
+        mpText.color = Color.black;
+        mpText.alignment = TextAnchor.MiddleRight;
+        
+        RectTransform mpRect = mpObj.GetComponent<RectTransform>();
+        mpRect.anchorMin = new Vector2(0, 0.25f);  // CHANGED: For 4 stats
+        mpRect.anchorMax = new Vector2(1, 0.5f);   // CHANGED: For 4 stats
+        mpRect.offsetMin = Vector2.zero;
+        mpRect.offsetMax = Vector2.zero;
+        
+        // NEW: Create Buff text
+        GameObject buffObj = new GameObject("BuffText");
+        buffObj.transform.SetParent(panelObj.transform);
+        buffText = buffObj.AddComponent<Text>();
+        buffText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        buffText.fontSize = 14;  // Slightly smaller font
+        buffText.color = Color.blue;  // Blue color to distinguish from stats
+        buffText.alignment = TextAnchor.MiddleRight;
+        
+        RectTransform buffRect = buffObj.GetComponent<RectTransform>();
+        buffRect.anchorMin = new Vector2(0, 0);
+        buffRect.anchorMax = new Vector2(1, 0.25f);
+        buffRect.offsetMin = Vector2.zero;
+        buffRect.offsetMax = Vector2.zero;
     }
     
     private void UpdateUI()
@@ -110,6 +153,19 @@ public class AdventureGameManager : MonoBehaviour
         if (hpText != null)
         {
             hpText.text = $"HP: {currentHP}/{maxHP}";
+        }
+        
+        // NEW: Update MP text
+        if (mpText != null)
+        {
+            mpText.text = $"MP: {currentMP}/{maxMP}";
+        }
+        
+        // NEW: Update Buff text
+        if (buffText != null)
+        {
+            string selectedBuff = AdventureDataManager.GetSelectedBuff();
+            buffText.text = !string.IsNullOrEmpty(selectedBuff) ? $"Buff: {selectedBuff}" : "Buff: None";
         }
     }
     
@@ -139,6 +195,26 @@ public class AdventureGameManager : MonoBehaviour
         CheckGameOver();
     }
     
+    // NEW: MP management methods
+    public void UseMP(int amount)
+    {
+        currentMP -= amount;
+        if (currentMP < 0) currentMP = 0;
+        UpdateUI();
+    }
+    
+    public void RestoreMP(int amount)
+    {
+        currentMP += amount;
+        if (currentMP > maxMP) currentMP = maxMP;
+        UpdateUI();
+    }
+    
+    public bool HasEnoughMP(int amount)
+    {
+        return currentMP >= amount;
+    }
+    
     private void CheckGameOver()
     {
         if (gameOverUI == null) return;
@@ -153,6 +229,7 @@ public class AdventureGameManager : MonoBehaviour
         }
     }
     
+    // Getter methods
     public int GetCurrentSteps()
     {
         return currentSteps;
@@ -163,8 +240,67 @@ public class AdventureGameManager : MonoBehaviour
         return currentHP;
     }
     
+    public int GetMaxSteps()
+    {
+        return maxSteps;
+    }
+    
+    public int GetMaxHP()
+    {
+        return maxHP;
+    }
+    
+    // NEW: MP getter methods
+    public int GetCurrentMP()
+    {
+        return currentMP;
+    }
+    
+    public int GetMaxMP()
+    {
+        return maxMP;
+    }
+    
     public bool IsGameOver()
     {
         return currentSteps <= 0 || currentHP <= 0;
+    }
+    
+    // Setter methods for buff system
+    public void SetMaxSteps(int newMaxSteps)
+    {
+        maxSteps = newMaxSteps;
+        UpdateUI();
+    }
+    
+    public void SetMaxHP(int newMaxHP)
+    {
+        maxHP = newMaxHP;
+        UpdateUI();
+    }
+    
+    public void SetCurrentSteps(int newCurrentSteps)
+    {
+        currentSteps = newCurrentSteps;
+        UpdateUI();
+    }
+    
+    public void SetCurrentHP(int newCurrentHP)
+    {
+        currentHP = newCurrentHP;
+        UpdateUI();
+    }
+    
+    // NEW: MP setter methods for buff system
+    public void SetMaxMP(int newMaxMP)
+    {
+        maxMP = newMaxMP;
+        UpdateUI();
+    }
+    
+    public void SetCurrentMP(int newCurrentMP)
+    {
+        currentMP = newCurrentMP;
+        UpdateUI();
     }
 }

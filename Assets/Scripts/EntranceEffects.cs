@@ -10,44 +10,72 @@ public class EntranceEffects : IBuildingEffects
     
     public void OnStartWork(int buildingID)
     {
-        Debug.Log("Starting adventure from entrance!");
+        Debug.Log("Opening adventure selection UI!");
         
-        // CRITICAL: Save the game state before scene transition
+        // CRITICAL: Save the game state before showing selection UI
         SaveSystem saveSystem = Object.FindObjectOfType<SaveSystem>();
         if (saveSystem != null)
         {
-            saveSystem.TriggerSave("Before Adventure");
-            Debug.Log("Game saved before adventure");
+            saveSystem.TriggerSave("Before Adventure Selection");
+            Debug.Log("Game saved before adventure selection");
         }
         
-        // Check if SceneFadeManager exists before using it
-        SceneFadeManager fadeManager = Object.FindObjectOfType<SceneFadeManager>();
-        if (fadeManager != null)
+        // Show the adventure selection UI instead of immediately transitioning
+        // NOTE: ActPoint is NOT consumed here - only when "Start Adventure" is clicked
+        AdventureSelectionUI.Instance.ShowSelectionUI();
+        
+        // IMPORTANT: Set building status back to idle immediately since we're not doing real work
+        BuildingComponent building = Object.FindObjectOfType<BuildingComponent>();
+        BuildingComponent[] allBuildings = Object.FindObjectsOfType<BuildingComponent>();
+        foreach (BuildingComponent buildingComp in allBuildings)
         {
-            // Start fade out before transitioning
-            fadeManager.StartSceneFadeOut(1f, () => {
-                // This callback runs after fade completes
-                Debug.Log("Transitioning to adventure scene...");
-                GameSceneManager.Instance.LoadAdventureScene();
-            });
-        }
-        else
-        {
-            // Fallback: direct transition without fade
-            Debug.Log("No fade manager found, direct transition");
-            GameSceneManager.Instance.LoadAdventureScene();
+            if (buildingComp.GetBuildingID() == buildingID)
+            {
+                buildingComp.SetStatus(BuildingStatus.Idle);
+                break;
+            }
         }
     }
     
     public void OnCompleteWork()
     {
         // Adventure work completes immediately (duration 0)
-        Debug.Log("Adventure completed from entrance");
+        Debug.Log("Adventure selection completed from entrance");
     }
-}
-
-// Simple helper class for delayed scene transition (no longer needed with fade system)
-public class AdventureTransitionHelper : MonoBehaviour
-{
-    // This class is kept for compatibility but no longer used
+    
+    // Static method to actually consume actpoint and start adventure
+    // This is called from the "Start Adventure" button, not from building work assignment
+    public static void ConsumeActPointAndStartAdventure()
+    {
+        ResourceManager resourceManager = Object.FindObjectOfType<ResourceManager>();
+        if (resourceManager != null)
+        {
+            // Check if player has enough actpoint
+            Resource actpointResource = resourceManager.GetResource("actpoint");
+            if (actpointResource != null && actpointResource.quantity >= 3)
+            {
+                // Consume 3 actpoint
+                resourceManager.AddToResource("actpoint", -3);
+                Debug.Log("Consumed 3 actpoint for adventure");
+                
+                // Now start the actual adventure
+                SceneFadeManager fadeManager = Object.FindObjectOfType<SceneFadeManager>();
+                if (fadeManager != null)
+                {
+                    fadeManager.StartSceneFadeOut(1f, () => {
+                        GameSceneManager.Instance.LoadAdventureScene();
+                    });
+                }
+                else
+                {
+                    GameSceneManager.Instance.LoadAdventureScene();
+                }
+            }
+            else
+            {
+                Debug.Log("Not enough actpoint for adventure!");
+                // Could show error message here
+            }
+        }
+    }
 }

@@ -50,7 +50,10 @@ public class BuildingComponent : MonoBehaviour
         }
         else if (status == BuildingStatus.Working)
         {
-            CreateWorkingVFX();
+            if (buildingType.ToLower() != "tian")
+            {
+                CreateWorkingVFX();
+            }
         }
     }
     
@@ -118,13 +121,16 @@ public class BuildingComponent : MonoBehaviour
         if (status == BuildingStatus.Idle)
         {
             status = BuildingStatus.Working;
-            CreateWorkingVFX();
+            if (buildingType.ToLower() != "tian")
+            {
+                CreateWorkingVFX();
+            }
             Debug.Log($"Building {buildingType} started working with VFX");
         }
         else if (status == BuildingStatus.Working)
         {
             // Already working, just ensure VFX is visible
-            if (workingVFX == null)
+            if (workingVFX == null && buildingType.ToLower() != "tian")
             {
                 CreateWorkingVFX();
                 Debug.Log($"Building {buildingType} was already working, added missing VFX");
@@ -137,8 +143,11 @@ public class BuildingComponent : MonoBehaviour
         if (status == BuildingStatus.Working)
         {
             status = BuildingStatus.Idle;
-            DestroyWorkingVFX();
-            StartCoroutine(ShowWorkCompleteVFX());
+            if (buildingType.ToLower() != "tian")
+            {
+                DestroyWorkingVFX();
+                StartCoroutine(ShowWorkCompleteVFX());
+            }
             BuildingEffectsSystem.Instance.ApplyCompleteWorkEffect(buildingType);
             Debug.Log($"Building {buildingType} completed work");
         }
@@ -582,6 +591,94 @@ public class BuildingComponent : MonoBehaviour
             infoUI.HideInfo();
         }
     }
+
+    void OnMouseOver()
+    {
+        // Check for right mouse button click
+        if (Input.GetMouseButtonDown(1)) // 1 = right mouse button
+        {
+            OnRightClick();
+        }
+    }
+
+    private void OnRightClick()
+    {
+        // Check if ANY UI panel is open to prevent clicking through
+        if (IsAnyUIOpen())
+        {
+            return; // Don't process right-click if any UI is open
+        }
+
+        string buildingType = GetBuildingType().ToLower();
+        
+        // SPECIAL CASE: For Tian buildings, check if work is ready to collect first
+        if (buildingType == "tian")
+        {
+            TianWorkVisualizer tianVisualizer = GetComponent<TianWorkVisualizer>();
+            if (tianVisualizer != null && tianVisualizer.IsWorkReadyToCollect())
+            {
+                // If work is ready to collect, collect it instead of starting new work
+                tianVisualizer.CollectTianWork();
+                return; // Exit early, don't start new work
+            }
+        }
+        
+        // GENERAL CASE: Don't allow starting new work if building is already working
+        if (GetStatus() == BuildingStatus.Working)
+        {
+            return; // Building is busy, can't start new work
+        }
+        
+        // Check if this building type has work capabilities
+        if (HasWorkCapability(buildingType))
+        {
+            // Execute the same logic as the "Assign Work" button
+            ExecuteStartWork();
+        }
+        // If no work capability, do nothing (as requested)
+    }
+
+    private bool HasWorkCapability(string buildingType)
+    {
+        switch (buildingType)
+        {
+            case "tian":
+            case "tower":
+            case "entrance":
+            case "workshop":
+            case "zuofang":
+            case "farmhouse":
+                return true;
+            case "home":
+            case "siheyuan":
+            case "storage":
+            default:
+                return false;
+        }
+    }
+
+    private void ExecuteStartWork()
+    {
+        string buildingType = GetBuildingType().ToLower();
+        
+        // Special case for entrance - bypass work system entirely
+        if (buildingType == "entrance")
+        {
+            AdventureSelectionUI.Instance.ShowSelectionUI();
+            return; // Exit early, don't use work assignment system
+        }
+        // Find BuildingInfoUI and use its existing work assignment logic
+        BuildingInfoUI buildingUI = FindObjectOfType<BuildingInfoUI>();
+        if (buildingUI != null)
+        {
+            // Simulate the "Assign Work" button click by calling the same method
+            // We need to set the current building first
+            buildingUI.ShowExpandedInfoForBuilding(this, GetBuildingType(), GetLevel());
+            
+            // Then trigger the work assignment
+            buildingUI.TriggerAssignWork();
+        }
+    }
     
     void OnMouseDown()
     {
@@ -589,6 +686,16 @@ public class BuildingComponent : MonoBehaviour
         if (IsAnyUIOpen())
         {
             return; // Don't process building click if any UI is open
+        }
+
+        if (buildingType.ToLower() == "tian")
+        {
+            TianWorkVisualizer tianVisualizer = GetComponent<TianWorkVisualizer>();
+            if (tianVisualizer != null && tianVisualizer.IsWorkReadyToCollect())
+            {
+                tianVisualizer.CollectTianWork();
+                return; // Don't open UI, just collect
+            }
         }
         
         // Check if UI panel is already open to prevent clicking through

@@ -179,6 +179,12 @@ public class BuildingEffectsSystem : MonoBehaviour
             
             if (work.IsComplete(currentDay))
             {
+
+                if (work.buildingType.ToLower() == "tian")
+                {
+                    continue; // Don't auto-complete, wait for manual collection
+                }
+                
                 Debug.Log($"Work assignment {work.workType} for building {work.buildingID} is complete!");
                 // Complete the work
                 CompleteWorkAssignment(work);
@@ -251,6 +257,18 @@ public class BuildingEffectsSystem : MonoBehaviour
             // - Playing repair completion animation
             // Example placeholder:
             // ChangeRepairVisuals(building);
+        }
+    }
+
+    public void RemoveWorkAssignment(int buildingID)
+    {
+        for (int i = activeWorkAssignments.Count - 1; i >= 0; i--)
+        {
+            if (activeWorkAssignments[i].buildingID == buildingID)
+            {
+                activeWorkAssignments.RemoveAt(i);
+                break;
+            }
         }
     }
 
@@ -484,7 +502,10 @@ public class BuildingEffectsSystem : MonoBehaviour
             if (building != null)
             {
                 building.SetStatus(BuildingStatus.Working);
-                building.StartWork(); // This will create the working VFX
+                if (work.buildingType.ToLower() != "tian")
+                {
+                    building.StartWork();
+                }
                 Debug.Log($"Restored working state for building {work.buildingID} ({work.buildingType})");
             }
         }
@@ -631,9 +652,25 @@ public class BuildingEffectsSystem : MonoBehaviour
         BuildingComponent building = FindBuildingByID(buildingID);
         if (building != null)
         {
-            building.StartWork(); // This creates the working VFX
+            if (buildingType.ToLower() != "tian")
+            {
+                building.StartWork();
+            }
+            else
+            {
+                // For Tian, just set status without VFX
+                building.SetStatus(BuildingStatus.Working);
+            }
         }
         
+        // Add this debug logging before creating WorkAssignment
+        Debug.Log($"=== TIAN WORK DEBUG ===");
+        Debug.Log($"Building ID: {buildingID}");
+        Debug.Log($"Work Type: {workType}");
+        Debug.Log($"Duration: {duration}");
+        Debug.Log($"Current Day: {currentDay}");
+        Debug.Log($"Completion Day will be: {currentDay + duration}");
+        Debug.Log($"======================");
         // Create work assignment
         WorkAssignment newWork = new WorkAssignment(buildingID, buildingType, workType, currentDay, duration, resourceCosts);
         if (duration == 0)
