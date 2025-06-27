@@ -82,6 +82,100 @@ public class AdventureSelectionUI : MonoBehaviour
     void Start()
     {
         CreateAdventureSelectionUI();
+        LoadAdventureChoices();
+    }
+
+    public string GetSelectedBuff()
+    {
+        return selectedBuff;
+    }
+
+    public List<int> GetSelectedSkills()
+    {
+        return new List<int>(selectedSkills);
+    }
+
+    public void LoadAdventureChoices()
+    {
+        SaveSystem saveSystem = FindObjectOfType<SaveSystem>();
+        if (saveSystem != null)
+        {
+            GameSaveData saveData = saveSystem.LoadGame();
+            if (saveData != null && saveData.adventureData != null)
+            {
+                selectedBuff = saveData.adventureData.selectedBuff;
+                selectedSkills = new List<int>(saveData.adventureData.selectedSkills);
+                
+                // Update visual state after loading
+                StartCoroutine(UpdateVisualsAfterLoad());
+                
+                Debug.Log($"Loaded adventure data: buff={selectedBuff}, skills=[{string.Join(",", selectedSkills)}]");
+            }
+        }
+    }
+
+    private System.Collections.IEnumerator UpdateVisualsAfterLoad()
+    {
+        // Wait a few frames to ensure UI is fully created
+        yield return null;
+        yield return null;
+        
+        // Update buff visual if needed
+        if (selectedBuff != "Buff_0")
+        {
+            int buffIndex = int.Parse(selectedBuff.Split('_')[1]);
+            if (buffIndex < allBuffs.Count && allBuffs[buffIndex].isUnlocked)
+            {
+                UpdateSingleBuffDisplay(allBuffs[buffIndex]);
+                UpdateSkillDescription(allBuffs[buffIndex]);
+            }
+        }
+        
+        // Update skill visuals for loaded selections
+        Debug.Log($"Attempting to update visuals for {selectedSkills.Count} selected skills");
+        foreach (int skillIndex in selectedSkills)
+        {
+            // Find skill slot more reliably by searching through the skill area
+            GameObject skillSlot = FindSkillSlotByIndex(skillIndex);
+            if (skillSlot != null)
+            {
+                Debug.Log($"Found and updating skill slot {skillIndex}");
+                UpdateSkillVisual(skillSlot, skillIndex);
+            }
+            else
+            {
+                Debug.LogWarning($"Could not find skill slot for index {skillIndex}");
+            }
+        }
+    }
+
+    private GameObject FindSkillSlotByIndex(int skillIndex)
+    {
+        // First try the direct GameObject.Find approach
+        GameObject skillSlot = GameObject.Find($"SkillSlot_{skillIndex}");
+        if (skillSlot != null)
+        {
+            return skillSlot;
+        }
+        
+        // If that fails, search through the skill area hierarchy
+        if (skillArea != null)
+        {
+            Transform skillContent = skillArea.transform.Find("SkillContent");
+            if (skillContent != null)
+            {
+                for (int i = 0; i < skillContent.childCount; i++)
+                {
+                    Transform child = skillContent.GetChild(i);
+                    if (child.name == $"SkillSlot_{skillIndex}")
+                    {
+                        return child.gameObject;
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
     private void InitializeBuffData()

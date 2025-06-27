@@ -135,9 +135,17 @@ public class BuildingEffectsSystem : MonoBehaviour
         // Move save loading to Start() to ensure SaveSystem is ready
         if (!hasLoadedFromSave)
         {
-            LoadWorkAssignmentsFromSave();
-            hasLoadedFromSave = true;
+            StartCoroutine(DelayedLoadWorkAssignments());
         }
+    }
+
+    private System.Collections.IEnumerator DelayedLoadWorkAssignments()
+    {
+        // Wait one frame to ensure all BuildingComponents have initialized
+        yield return null;
+        
+        LoadWorkAssignmentsFromSave();
+        hasLoadedFromSave = true;
     }
     
     void OnDestroy()

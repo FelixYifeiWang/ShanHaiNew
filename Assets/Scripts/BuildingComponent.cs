@@ -457,10 +457,22 @@ public class BuildingComponent : MonoBehaviour
                         if (buildingData.landID == myLandID && buildingData.buildingID == buildingID)
                         {
                             level = buildingData.level;
-                            status = (BuildingStatus)System.Enum.Parse(typeof(BuildingStatus), buildingData.status);
-                            needsRepair = buildingData.needsRepair;      // Add this
-                            isRepaired = buildingData.isRepaired; 
-                            Debug.Log($"[{name}] Loaded building data successfully.");
+                            
+                            // IMPROVED: Validate status before applying
+                            if (System.Enum.TryParse(buildingData.status, out BuildingStatus loadedStatus))
+                            {
+                                status = loadedStatus;
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"Invalid building status '{buildingData.status}' for {name}, defaulting to Idle");
+                                status = BuildingStatus.Idle;
+                            }
+                            
+                            needsRepair = buildingData.needsRepair;
+                            isRepaired = buildingData.isRepaired;
+                            
+                            Debug.Log($"[{name}] Loaded building data successfully. Status: {status}");
                             return true;
                         }
                     }

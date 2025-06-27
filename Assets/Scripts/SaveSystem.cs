@@ -10,6 +10,7 @@ public class GameSaveData
     public List<BuildingSaveData> buildings = new List<BuildingSaveData>();
     public List<WorkAssignmentSaveData> workAssignments = new List<WorkAssignmentSaveData>();
     public List<WorkAssignmentSaveData> repairAssignments = new List<WorkAssignmentSaveData>(); // Add this
+    public AdventureSaveData adventureData = new AdventureSaveData(); 
 }
 
 [System.Serializable]
@@ -26,6 +27,19 @@ public class ResourceSaveData
         quantity = qty;
         isUnlocked = unlocked;
         isSpecialResource = isSpecial; // Add this
+    }
+}
+
+[System.Serializable]
+public class AdventureSaveData
+{
+    public string selectedBuff = "Buff_0";
+    public List<int> selectedSkills = new List<int>();
+    
+    public AdventureSaveData()
+    {
+        selectedBuff = "Buff_0";
+        selectedSkills = new List<int>();
     }
 }
 
@@ -103,12 +117,29 @@ public class SaveSystem : MonoBehaviour
         
         // Subscribe to events that should trigger saves
         LandEvents.OnLandUnlocked += OnLandUnlocked;
+        NextDayEvents.OnNextDay += OnNextDayWithDelay;
     }
     
     void OnDestroy()
     {
         // Unsubscribe to prevent memory leaks
         LandEvents.OnLandUnlocked -= OnLandUnlocked;
+        NextDayEvents.OnNextDay -= OnNextDayWithDelay;
+    }
+
+    private void OnNextDayWithDelay()
+    {
+        // Wait a frame to ensure all NextDay processing is complete before saving
+        StartCoroutine(DelayedSaveAfterNextDay());
+    }
+
+    private System.Collections.IEnumerator DelayedSaveAfterNextDay()
+    {
+        // Wait one frame to ensure all NextDay event handlers have completed
+        yield return null;
+        
+        Debug.Log("Performing delayed save after NextDay events completed");
+        SaveGame();
     }
     
     private void OnLandUnlocked(int landID)
@@ -139,6 +170,8 @@ public class SaveSystem : MonoBehaviour
         SaveWorkAssignments(saveData);
 
         SaveRepairAssignments(saveData); 
+
+        SaveAdventureData(saveData);
         
         // Write to file
         string json = JsonUtility.ToJson(saveData, true);
@@ -163,6 +196,16 @@ public class SaveSystem : MonoBehaviour
         else
         {
             return null;
+        }
+    }
+
+    private void SaveAdventureData(GameSaveData saveData)
+    {
+        if (AdventureSelectionUI.Instance != null)
+        {
+            saveData.adventureData.selectedBuff = AdventureSelectionUI.Instance.GetSelectedBuff();
+            saveData.adventureData.selectedSkills = new List<int>(AdventureSelectionUI.Instance.GetSelectedSkills());
+            Debug.Log($"Saved adventure data: buff={saveData.adventureData.selectedBuff}, skills={saveData.adventureData.selectedSkills.Count}");
         }
     }
     
@@ -212,17 +255,25 @@ public class SaveSystem : MonoBehaviour
             BuildingComponent buildingComp = building.GetComponent<BuildingComponent>();
             if (buildingComp != null)
             {
+                // IMPROVED: Validate building status before saving
+                BuildingStatus currentStatus = buildingComp.GetStatus();
+                string statusString = currentStatus.ToString();
+                
+                Debug.Log($"Saving building {buildingComp.GetBuildingType()} (ID: {buildingComp.GetBuildingID()}) with status: {statusString}");
+                
                 saveData.buildings.Add(new BuildingSaveData(
                     buildingComp.GetBuildingID(),
                     buildingComp.GetBuildingType(),
                     buildingComp.GetLevel(),
-                    buildingComp.GetStatus().ToString(),
+                    statusString,
                     building.GetLandID(),
-                    buildingComp.NeedsRepair(),    // Add this
-                    buildingComp.IsRepaired()   
+                    buildingComp.NeedsRepair(),
+                    buildingComp.IsRepaired()
                 ));
             }
         }
+        
+        Debug.Log($"Saved {saveData.buildings.Count} buildings");
     }
     
     private void SaveWorkAssignments(GameSaveData saveData)
