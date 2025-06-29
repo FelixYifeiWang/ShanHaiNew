@@ -60,7 +60,10 @@ public class AdventureSelectionUI : MonoBehaviour
         {
             if (instance == null)
             {
+                // Try to find existing instance first
                 instance = FindObjectOfType<AdventureSelectionUI>();
+                
+                // Only create new if none exists
                 if (instance == null)
                 {
                     GameObject selectionObj = new GameObject("AdventureSelectionUI");
@@ -73,15 +76,29 @@ public class AdventureSelectionUI : MonoBehaviour
     
     void Awake()
     {
-        instance = this;
-        selectedBuff = "Buff_0";
-        InitializeBuffData();
-        InitializeSkillData();
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+            selectedBuff = "Buff_0";
+            InitializeBuffData();
+            InitializeSkillData();
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
-    
+
     void Start()
     {
-        CreateAdventureSelectionUI();
+        // Only create UI if it hasn't been created yet
+        if (selectionPanel == null)
+        {
+            CreateAdventureSelectionUI();
+        }
+        
         LoadAdventureChoices();
     }
 

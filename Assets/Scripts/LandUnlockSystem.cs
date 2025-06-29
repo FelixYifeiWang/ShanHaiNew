@@ -49,19 +49,19 @@ public class LandUnlockSystem : MonoBehaviour
         // Subscribe to land unlock events to unlock resources
         LandEvents.OnLandUnlocked += OnLandUnlocked;
         
-        if (unlockButton == null)
-        {
-            CreateUnlockButton();
-        }
+        // if (unlockButton == null)
+        // {
+        //     CreateUnlockButton();
+        // }
         
-        if (unlockButton != null)
-        {
-            unlockButton.onClick.AddListener(TryUnlockNextLand);
-        }
+        // if (unlockButton != null)
+        // {
+        //     unlockButton.onClick.AddListener(TryUnlockNextLand);
+        // }
         
-        // Update button display initially and periodically
-        UpdateButtonDisplay();
-        InvokeRepeating("UpdateButtonDisplay", 0.5f, 0.5f);
+        // // Update button display initially and periodically
+        // UpdateButtonDisplay();
+        // InvokeRepeating("UpdateButtonDisplay", 0.5f, 0.5f);
     }
     
     void OnDestroy()
@@ -293,13 +293,14 @@ public class LandUnlockSystem : MonoBehaviour
         // Land 5: brokenstone, tower
         LandUnlockRequirement land5 = new LandUnlockRequirement(5);
 
-        land5.AddRequirement("actpoint", 2);
+        land5.AddRequirement("gold", 1);
         landRequirements.Add(land5);
         
         // Land 6: entrance
         LandUnlockRequirement land6 = new LandUnlockRequirement(6);
 
         land6.AddRequirement("actpoint", 2);
+        land6.AddRequirement("crop2", 2);
         landRequirements.Add(land6);
     }
     
