@@ -694,9 +694,12 @@ public class BuildingComponent : MonoBehaviour
     
     void OnMouseDown()
     {
+        Debug.Log($"Building clicked: Type={buildingType}, ID={buildingID}, Level={level}");
+        
         // Check if ANY UI panel is open to prevent clicking through
         if (IsAnyUIOpen())
         {
+            Debug.Log("UI is open, ignoring click");
             return; // Don't process building click if any UI is open
         }
 
@@ -710,12 +713,71 @@ public class BuildingComponent : MonoBehaviour
             }
         }
         
-        // Check if UI panel is already open to prevent clicking through
-        BuildingInfoUI infoUI = FindObjectOfType<BuildingInfoUI>();
-        if (infoUI != null && !infoUI.IsExpanded())
+        // NEW: Check if this is a farmhouse building
+        if (buildingType.ToLower() == "farmhouse")
         {
-            // Pass this specific building component to the UI
-            infoUI.ShowExpandedInfoForBuilding(this, buildingType, level);
+            // Use farmhouse-specific panel
+            BuildingPanelController_Farmhouse farmhousePanel = FindObjectOfType<BuildingPanelController_Farmhouse>();
+            if (farmhousePanel == null)
+            {
+                Debug.LogError("BuildingPanelController_Farmhouse not found in scene!");
+                return;
+            }
+            
+            Debug.Log($"Opening farmhouse panel for building ID: {buildingID}");
+            farmhousePanel.ShowPanelForBuilding(buildingID, level);
+        }
+        else
+        {
+            // Use regular building panel for all other buildings
+            BuildingPanelController panelController = FindObjectOfType<BuildingPanelController>();
+            if (panelController == null)
+            {
+                Debug.LogError("BuildingPanelController not found in scene!");
+                return;
+            }
+            
+            // Convert string buildingType to enum
+            BuildingPanelController.BuildingType enumBuildingType = ConvertToBuildingTypeEnum(buildingType);
+            Debug.Log($"Converted '{buildingType}' to enum: {enumBuildingType}");
+            
+            panelController.ShowPanelForBuilding(buildingID, enumBuildingType, level);
+        }
+    }
+
+    // NEW: Add this helper method to BuildingComponent
+    private BuildingPanelController.BuildingType ConvertToBuildingTypeEnum(string buildingTypeString)
+    {
+        switch (buildingTypeString.ToLower())
+        {
+            case "home":
+            case "siheyuan":
+                return BuildingPanelController.BuildingType.Home;
+                
+            case "storage":
+                return BuildingPanelController.BuildingType.Storage;
+                
+            case "tian":
+            case "farmland":
+                return BuildingPanelController.BuildingType.Tian;
+                
+            case "farmhouse":
+            case "farm house":
+                return BuildingPanelController.BuildingType.FarmHouse;
+                
+            case "workshop":
+            case "zuofang":
+                return BuildingPanelController.BuildingType.Workshop;
+                
+            case "tower":
+                return BuildingPanelController.BuildingType.Tower;
+                
+            case "entrance":
+                return BuildingPanelController.BuildingType.Entrance;
+                
+            default:
+                Debug.LogWarning($"Unknown building type: {buildingTypeString}, defaulting to Home");
+                return BuildingPanelController.BuildingType.Home;
         }
     }
 
@@ -723,6 +785,18 @@ public class BuildingComponent : MonoBehaviour
     private bool IsAnyUIOpen()
     {
         if (UniversalPauseMenu.Instance != null && UniversalPauseMenu.Instance.IsPauseMenuShowing())
+        {
+            return true;
+        }
+
+        BuildingPanelController panelController = FindObjectOfType<BuildingPanelController>();
+        if (panelController != null && panelController.IsPanelVisible())
+        {
+            return true;
+        }
+
+        BuildingPanelController_Farmhouse farmhousePanel = FindObjectOfType<BuildingPanelController_Farmhouse>();
+        if (farmhousePanel != null && farmhousePanel.IsPanelVisible())
         {
             return true;
         }

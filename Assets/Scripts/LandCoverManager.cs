@@ -10,12 +10,10 @@ public class LandCoverManager : MonoBehaviour
     [SerializeField] private GameObject landcover5; // Land 6
     
     private LandManager landManager;
-    private LandUnlockSystem unlockSystem;
     
     void Start()
     {
         landManager = FindObjectOfType<LandManager>();
-        unlockSystem = FindObjectOfType<LandUnlockSystem>();
         
         // Subscribe to land unlock events
         LandEvents.OnLandUnlocked += OnLandUnlocked;
@@ -32,7 +30,31 @@ public class LandCoverManager : MonoBehaviour
         
         // Initial setup
         UpdateLandCoverVisibility();
-        SetupClickHandlers();
+        SetupHoverHandlers();
+    }
+
+    // Add this to LandCoverManager.cs Start() method after SetupClickHandlers():
+    // Add these methods to LandCoverManager.cs:
+    private void SetupHoverHandlers()
+    {
+        SetupCoverHover(landcover1, 2);
+        SetupCoverHover(landcover2, 3);
+        SetupCoverHover(landcover3, 4);
+        SetupCoverHover(landcover4, 5);
+        SetupCoverHover(landcover5, 6);
+    }
+
+    private void SetupCoverHover(GameObject cover, int landID)
+    {
+        if (cover == null) return;
+        
+        // Add hover handler component
+        LandCoverHoverHandler hoverHandler = cover.GetComponent<LandCoverHoverHandler>();
+        if (hoverHandler == null)
+        {
+            hoverHandler = cover.AddComponent<LandCoverHoverHandler>();
+        }
+        hoverHandler.Initialize(landID);
     }
     
     void OnDestroy()
@@ -169,77 +191,47 @@ public class LandCoverManager : MonoBehaviour
             img.color = color;
         }
     }
+}
+
+public class LandCoverHoverHandler : MonoBehaviour
+{
+    private int targetLandID;
+    private LandCoverInfoUI infoUI;
     
-    private void SetupClickHandlers()
+    public void Initialize(int landID)
     {
-        SetupCoverClick(landcover1, 2);
-        SetupCoverClick(landcover2, 3);
-        SetupCoverClick(landcover3, 4);
-        SetupCoverClick(landcover4, 5);
-        SetupCoverClick(landcover5, 6);
+        targetLandID = landID;
+        infoUI = FindObjectOfType<LandCoverInfoUI>();
     }
     
-    private void SetupCoverClick(GameObject cover, int landID)
+    void OnMouseEnter()
     {
-        if (cover == null) return;
-        
-        // Try UI Button first
-        Button button = cover.GetComponent<Button>();
-        if (button != null)
+        // Check if mouse is over UI - if so, don't trigger hover
+        if (UnityEngine.EventSystems.EventSystem.current != null && 
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => TryUnlockLand(landID));
             return;
         }
         
-        // If not UI, add world space click handler
-        Collider2D collider = cover.GetComponent<Collider2D>();
-        if (collider == null)
+        Debug.Log("Hover begins");
+        if (infoUI != null)
         {
-            collider = cover.AddComponent<BoxCollider2D>();
+            infoUI.ShowLandInfo(targetLandID);
+        }
+    }
+    
+    void OnMouseExit()
+    {
+        // Check if mouse is over UI - if so, don't trigger exit
+        if (UnityEngine.EventSystems.EventSystem.current != null && 
+            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
         }
         
-        LandCoverClickHandler clickHandler = cover.GetComponent<LandCoverClickHandler>();
-        if (clickHandler == null)
+        if (infoUI != null)
         {
-            clickHandler = cover.AddComponent<LandCoverClickHandler>();
-        }
-        clickHandler.Initialize(landID, this);
-    }
-    
-    public void TryUnlockLandPublic(int landID)
-    {
-        if (unlockSystem != null && unlockSystem.CanUnlockLand(landID))
-        {
-            unlockSystem.TryUnlockLand(landID);
-        }
-    }
-    
-    private void TryUnlockLand(int landID)
-    {
-        if (unlockSystem != null && unlockSystem.CanUnlockLand(landID))
-        {
-            unlockSystem.TryUnlockLand(landID);
-        }
-    }
-}
-
-public class LandCoverClickHandler : MonoBehaviour
-{
-    private int targetLandID;
-    private LandCoverManager manager;
-    
-    public void Initialize(int landID, LandCoverManager landManager)
-    {
-        targetLandID = landID;
-        manager = landManager;
-    }
-    
-    void OnMouseDown()
-    {
-        if (manager != null)
-        {
-            manager.TryUnlockLandPublic(targetLandID);
+            infoUI.HideLandInfo();
         }
     }
 }

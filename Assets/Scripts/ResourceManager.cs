@@ -54,6 +54,55 @@ public class ResourceManager : MonoBehaviour
         //SpecialResourceInventory.Instance.gameObject.SetActive(true);
         StartCoroutine(InitializeSpecialResourceInventory());
     }
+
+    void Update()
+    {
+        // Cheat code: C + T = unlock all resources and set to 99999
+        if (Input.GetKey(KeyCode.C) && Input.GetKeyDown(KeyCode.T))
+        {
+            ActivateCheatMode();
+        }
+    }
+
+    private void ActivateCheatMode()
+    {
+        Debug.Log("🎮 CHEAT MODE ACTIVATED! All resources unlocked and set to 99999");
+        
+        // Unlock and max out all existing resources
+        foreach (var resourcePair in resources)
+        {
+            if (resourcePair.Key != "population") // Skip population
+            {
+                resourcePair.Value.isUnlocked = true;
+                resourcePair.Value.quantity = 99999;
+            }
+        }
+        
+        // Also make sure we have all possible resources
+        EnsureRequiredResources();
+        
+        // Unlock those too just in case
+        foreach (var resourcePair in resources)
+        {
+            if (resourcePair.Key != "population") // Skip population
+            {
+                resourcePair.Value.isUnlocked = true;
+                if (resourcePair.Value.quantity < 99999)
+                {
+                    resourcePair.Value.quantity = 99999;
+                }
+            }
+        }
+        
+        Debug.Log($"✅ Cheat complete! {resources.Count} resources now unlocked with 99999 quantity");
+        
+        // Trigger save so the cheated resources persist
+        SaveSystem saveSystem = FindObjectOfType<SaveSystem>();
+        if (saveSystem != null)
+        {
+            saveSystem.TriggerSave("Cheat mode activated");
+        }
+    }
     
     private System.Collections.IEnumerator InitializeSpecialResourceInventory()
     {

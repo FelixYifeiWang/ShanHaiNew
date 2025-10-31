@@ -964,4 +964,10 @@ public class BuildingInfoUI : MonoBehaviour
     {
         return isExpanded;
     }
+
+    public void TriggerUpgrade()
+    {
+        // Call the existing private method
+        OnUpgradeClicked();
+    }
 }
